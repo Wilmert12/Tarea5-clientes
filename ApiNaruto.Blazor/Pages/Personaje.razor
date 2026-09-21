@@ -1,0 +1,146 @@
+﻿@page "/personajes"
+@using ApiNaruto.Blazor.Models
+@inject HttpClient Http
+
+<PageTitle>Personajes</PageTitle>
+
+<h1>Personajes de Naruto</h1>
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert @(esError ? "alert-danger" : "alert-success")">@mensaje</div>
+}
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Nuevo personaje</h5>
+
+        <EditForm Model="nuevo" OnValidSubmit="GuardarAsync">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <label class="form-label">Nombre</label>
+                    <InputText class="form-control" @bind-Value="nuevo.Nombre" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Clan</label>
+                    <InputText class="form-control" @bind-Value="nuevo.Clan" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Aldea</label>
+                    <InputText class="form-control" @bind-Value="nuevo.Aldea" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Tipo de chakra</label>
+                    <InputText class="form-control" @bind-Value="nuevo.TipoChakra" />
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3" disabled="@guardando">
+                @(guardando ? "Guardando..." : "Guardar")
+            </button>
+        </EditForm>
+    </div>
+</div>
+
+@if (personajes is null)
+{
+    <p><em>Cargando...</em></p>
+}
+else if (personajes.Count == 0)
+{
+    <p>No hay personajes registrados.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nombre</th>
+                <th>Clan</th>
+                <th>Aldea</th>
+                <th>Tipo de chakra</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in personajes)
+            {
+                <tr>
+                    <td>@p.Id</td>
+                    <td>@p.Nombre</td>
+                    <td>@p.Clan</td>
+                    <td>@p.Aldea</td>
+                    <td>@p.TipoChakra</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Models.Personaje>? personajes;
+    private Models.Personaje nuevo = new();
+    private string? mensaje;
+    private bool esError;
+    private bool guardando;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarAsync();
+    }
+
+    // ---------- GET ----------
+    private async Task CargarAsync()
+    {
+        try
+        {
+                personajes = await Http.GetFromJsonAsync<List<Models.Personaje>>("api/Personajes");
+        }
+        catch (Exception ex)
+        {
+            personajes = new();
+            MostrarMensaje($"No se pudo cargar la lista: {ex.Message}", true);
+        }
+    }
+
+    // ---------- POST ----------
+    private async Task GuardarAsync()
+    {
+        guardando = true;
+        try
+        {
+            var respuesta = await Http.PostAsJsonAsync("api/Personajes", nuevo);
+
+            // La API responde texto plano, no JSON.
+            string cuerpo = await respuesta.Content.ReadAsStringAsync();
+
+            if (respuesta.IsSuccessStatusCode)
+            {
+                MostrarMensaje(cuerpo, false);
+                    nuevo = new Models.Personaje();
+                await CargarAsync();
+            }
+            else
+            {
+                MostrarMensaje($"Error {(int)respuesta.StatusCode}: {cuerpo}", true);
+            }
+        }
+        catch (Exception ex)
+        {
+            MostrarMensaje($"No se pudo conectar con la API: {ex.Message}", true);
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+    private void MostrarMensaje(string texto, bool error)
+    {
+        mensaje = texto;
+        esError = error;
+    }
+}
