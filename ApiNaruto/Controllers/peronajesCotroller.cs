@@ -16,18 +16,29 @@ public class PersonajesController : ControllerBase
         _connectionString = config.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Falta la cadena de conexión 'DefaultConnection'.");
     }
-
     [HttpGet]
     public async Task<IActionResult> GetPersonajes()
     {
-        using var connection = new SqlConnection(_connectionString);
-
-        const string sql = "SELECT Id, Nombre, Clan, Aldea, TipoChakra FROM Personajes";
-        var personajes = await connection.QueryAsync<Personaje>(sql);
-
-        return Ok(personajes);
+        try
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync(); // fuerza el error de conexión aquí
+            const string sql = "SELECT Id, Nombre, Clan, Aldea, TipoChakra FROM Personajes";
+            var personajes = await connection.QueryAsync<Personaje>(sql);
+            return Ok(personajes);
+        }
+        catch (SqlException ex)
+        {
+            // Registrar ex.Number, ex.State y ex.Message (reemplaza con _logger si existe)
+            Console.WriteLine($"SqlException.Number={ex.Number}, State={ex.State}, Message={ex.Message}");
+            return Problem(detail: $"Error de base de datos (Number={ex.Number}, State={ex.State})", statusCode: 500);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            return Problem(detail: ex.Message, statusCode: 500);
+        }
     }
-
     [HttpPost]
     public async Task<IActionResult> GuardarPersonaje([FromBody] Personaje personaje)
     {

@@ -15,14 +15,11 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
-app.UseCors("PermitirBlazor");   // después de UseHttpsRedirection, antes de UseAuthorization
+app.UseCors("PermitirBlazor");
 app.UseAuthorization();
 app.MapControllers();
 
