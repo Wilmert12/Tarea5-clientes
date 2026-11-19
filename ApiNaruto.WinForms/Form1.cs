@@ -4,7 +4,9 @@ namespace ApiNaruto.WinForms;
 
 public partial class Form1 : Form
 {
-    private const string ApiBaseUrl = "https://tarea5-clientes-fvd2fjdhfpd7g0au.mexicocentral-01.azurewebsites.net/";
+    private const string ApiBaseUrl = "https://tarea5-clientesp4-hsdkc6bqb2edhrc5.mexicocentral-01.azurewebsites.net/";
+
+
 
     private static readonly HttpClient _http = new()
     {

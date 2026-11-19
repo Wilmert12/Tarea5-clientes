@@ -8,7 +8,6 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient
 {
-    // Copia la URL exacta de ApiBaseUrl de tu Form1.cs (con https:// y la "/" final)
-    BaseAddress = new Uri("https://tarea5-clientes-fvd2fjdhfpd7g0au.mexicocentral-01.azurewebsites.net/")
+    BaseAddress = new Uri("https://tarea5-clientesp4-hsdkc6bqb2edhrc5.mexicocentral-01.azurewebsites.net/")
 });
 await builder.Build().RunAsync();
